@@ -76,8 +76,8 @@ class player:
         return self.w
     
 
-hidden_layer=[2,2]
+hidden_layer=[5,5,5,2]
 moha1=player(hidden_layer,3)
-print(moha1.get_model())
+#print(moha1.get_model())
 print(moha1.predict([5,56,6]))
 
