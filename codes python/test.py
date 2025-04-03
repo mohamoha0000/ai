@@ -2,8 +2,10 @@ class m:
     def __init__(self, x, y):
         self.x = x
         self.y = y
+    def m(self,k):
+        print(k)
 moha=m(5,6)
-lis=[]
-lis.append(moha)
-moha.x=99
-print(lis[0].x)
+
+
+moha.m(9)
+print(moha.k)

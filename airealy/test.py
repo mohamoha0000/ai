@@ -49,6 +49,8 @@ print(predict(w,[1,1]))"
 
 import random
 import copy
+import time
+import pickle
 class player:
     def __init__(self,hidden_layer,input):
         self.hidden_layer=hidden_layer
@@ -81,11 +83,17 @@ class player:
                     self.w[x][i][e]+=random.uniform(-1, 1)
     def get_model(self):
         return self.w
+    def save(self):
+        with open("data.pkl", "wb") as file:
+            pickle.dump(self.w, file)
+    def load(self,path):
+        with open(path, "rb") as file:
+            self.w= pickle.load(file)
     
 models=[]
 bestmodel=[[],[],[],[],[],[],[],[],[]]
 bestscore=0
-hidden_layer=[10,5,9]
+hidden_layer=[10,10,9]
 for i in range(100):
     models.append(player(hidden_layer,9))
 
@@ -95,49 +103,56 @@ def startgame(x):
     score=0
     for e in range(9):
         pred=x.predict(x.game)
-        if pred[e]>0.5 and pred[e]<1 and x.game[e]==0:
-            for t in range(len(pred)):
-                if not t==e:
-                    if pred[t]>0.5 and pred[t]<1:
-                        break
-            x.game[e]=1
-            score+=1
-    return score
+        valid_values = [value for value in pred if 0.5 < value < 1]
+        if len(valid_values) == 1:
+            x.game[pred.index(valid_values[0])]=1
+    score=x.game.count(1)
+    chayta=len(valid_values)
+    return score,chayta
 
-for ep in range(1000):
+for ep in range(10000):
     m=0
     eq=9999
+    eq_=9999
     for x in models:
         pred=x.predict(x.game)
         m=0
         score=0
+        chayta=0
         for e in range(len(pred)):
             if pred[e]>0.5 and pred[e]<1 and x.game[e]==0:
                 m+=1
         if m==1:
-            score=startgame(x)
+            score,chayta=startgame(x)
             
-        if m<eq and m>0:
+        if m<eq and m>0 and score == 0:
             eq=m
-            if score>bestscore:
-                bestmodel[m-1].append(x)
-                bestscore=score
-            else:
-                bestmodel[m-1].append(x)
+            bestmodel[m-1].append(x)
+        elif score>bestscore:
+            bestmodel[m-1].append(x)
+            bestscore=score
+        elif score==bestscore and chayta<eq_:
+            eq_=chayta
+            bestmodel[0].append(x)
+
+
     if ep%50==0:
         print("epouche n:",ep)
-    if ep==1000:
+        print("best score is :",bestscore)
+    if ep==10000 or bestscore==9:
         break
     models=[]
+    for e in reversed(bestmodel):
+        if len(e)>0:
+            new_model_m = copy.deepcopy(e[-1])
+    #new_model_m.game=[0,0,0,0,0,0,0,0,0]
     for x in range(100):
-        for e in reversed(bestmodel):
-            if len(e)>0:
-                new_model = copy.deepcopy(e[-1])
+        new_model=copy.deepcopy(new_model_m)
         new_model.update()
         models.append(new_model)
 bestmodel=[]
 
-bestmodel.append(new_model)
+bestmodel.append(new_model_m)
 lis=[0,0,0,
     0,0,0,
     0,0,0]
@@ -146,19 +161,32 @@ def print_board(board):
         print(f"{board[i]} | {board[i+1]} | {board[i+2]}")
         if i < 6:
             print("--+---+--")
+print("best score is :",bestscore)
+
+bestmodel[-1].save()
 
 while True:
-    print("best score is :",bestscore)
+
+
     print_board(lis)
     a=int(input("entre number:"))
+    lis[a-1]=1
+    print_board(lis)
+    print("ai think ...")
+    time.sleep(5)
     pred=bestmodel[-1].predict(lis)
-    for e in range(len(pred)):
-        if pred[e]>0.5 and pred[e]<1 and lis[e]==0:
-            for t in range(len(pred)):
-                if not t==e:
-                    if pred[t]>0.5 and pred[t]<1:
-                        break
-            lis[e]=1
+    valid_values = [value for value in pred if 0.5 < value < 1]
+    if len(valid_values) == 1:
+        lis[pred.index(valid_values[0])]=1
 
 
-
+"""
+for x in range(9):
+    print_board(lis)
+    print("ai think ...")
+    time.sleep(5)
+    pred=bestmodel[-1].predict(lis)
+    valid_values = [value for value in pred if 0.5 < value < 1]
+    if len(valid_values) == 1:
+        lis[pred.index(valid_values[0])]=1
+"""
