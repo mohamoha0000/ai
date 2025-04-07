@@ -17,3 +17,5 @@ prng = SimplePRNG(seed=42)
 
 print(prng.next_range(5, 10))  # يولد رقمًا بين 5 و 10
 print(prng.next_range(5, 10))  # يولد رقمًا جديدًا بين 5 و 10
+for x in range(9):
+    print(prng.next())

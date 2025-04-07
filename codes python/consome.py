@@ -4,7 +4,7 @@ from numba import cuda, jit
 import time
 
 # 🚀 CPU-intensive function
-@jit(nopython=True)
+#@jit(nopython=True)
 def cpu_heavy_computation(x):
     result = 0
     for i in range(1, 10**7):  # Heavy loop
